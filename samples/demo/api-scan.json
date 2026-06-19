@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "path": ".env",
+      "content": "REPOGUARD_DEMO_SECRET=R3pQ9vLm7Ks2Qa8Zp0Nv6Xy4"
+    },
+    {
+      "path": "mcp.json",
+      "content": "{ \"mcpServers\": { \"github\": { \"env\": { \"GITHUB_TOKEN\": \"R3pQ9vLm7Ks2Qa8Zp0Nv6Xy4\" } } } }"
+    }
+  ]
+}
