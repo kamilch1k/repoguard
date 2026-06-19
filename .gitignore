@@ -1,0 +1,9 @@
+bin/
+dist/
+coverage/
+go-build-cache/
+*.log
+.env
+.env.*
+!.env.example
+!samples/**/.env.demo
