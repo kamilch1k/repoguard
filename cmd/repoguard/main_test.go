@@ -36,7 +36,7 @@ func TestRunSupportsJSONOutput(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr=%s", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), `"filesScanned": 1`) {
+	if !strings.Contains(stdout.String(), "\"filesScanned\": 1") {
 		t.Fatalf("unexpected json: %s", stdout.String())
 	}
 }
