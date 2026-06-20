@@ -20,7 +20,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 
 	path := flags.String("path", ".", "path to scan")
-	format := flags.String("format", "text", "output format: text or json")
+	format := flags.String("format", "text", "output format: text, json, or sarif")
 	failOn := flags.String("fail-on", "error", "minimum finding severity that fails: none, info, warn, error")
 	maxFileBytes := flags.Int64("max-file-bytes", scanner.DefaultConfig().MaxFileBytes, "maximum text file size to scan")
 	entropyThreshold := flags.Float64("entropy-threshold", scanner.DefaultConfig().EntropyThreshold, "minimum Shannon entropy for token-like findings")
@@ -52,6 +52,13 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(report); err != nil {
 			_, _ = fmt.Fprintf(stderr, "write json: %v\n", err)
+			return 65
+		}
+	case "sarif":
+		encoder := json.NewEncoder(stdout)
+		encoder.SetIndent("", "  ")
+		if err := encoder.Encode(scanner.ToSARIF(report)); err != nil {
+			_, _ = fmt.Fprintf(stderr, "write sarif: %v\n", err)
 			return 65
 		}
 	case "text":

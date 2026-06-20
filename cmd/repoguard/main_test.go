@@ -41,6 +41,23 @@ func TestRunSupportsJSONOutput(t *testing.T) {
 	}
 }
 
+func TestRunSupportsSARIFOutput(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, ".env", "OPENAI_API_KEY=sk-"+strings.Repeat("A", 24)+"\n")
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	code := run([]string{"-path", dir, "-format", "sarif", "-fail-on", "none"}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr=%s", code, stderr.String())
+	}
+	output := stdout.String()
+	if !strings.Contains(output, `"version": "2.1.0"`) || !strings.Contains(output, `"ruleId": "RG003"`) {
+		t.Fatalf("unexpected sarif: %s", output)
+	}
+}
+
 func writeFile(t *testing.T, dir, name, content string) {
 	t.Helper()
 	path := filepath.Join(dir, name)

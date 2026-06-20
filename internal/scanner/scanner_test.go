@@ -48,6 +48,60 @@ func TestDetectsMCPEmbeddedEnvSecret(t *testing.T) {
 	}
 }
 
+func TestDetectsAgentAndMCPConfigRisks(t *testing.T) {
+	report := ScanFiles([]FileInput{
+		{
+			Path: ".mcp.json",
+			Content: `{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "R3pQ9vLm7Ks2Qa8Zp0Nv6Xy4"
+      }
+    }
+  },
+  "autoApprove": ["shell"],
+  "dangerouslySkipPermissions": true
+}`,
+		},
+		{
+			Path: ".github/workflows/ci.yml",
+			Content: `name: ci
+permissions: write-all
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps: []
+`,
+		},
+		{
+			Path:    ".env",
+			Content: "SERVICE_TOKEN=R3pQ9vLm7Ks2Qa8Zp0Nv6Xy4\n",
+		},
+	}, Config{EnableEntropy: false})
+
+	want := map[string]bool{
+		"RG102": false,
+		"RG301": false,
+		"RG302": false,
+		"RG303": false,
+		"RG304": false,
+		"RG305": false,
+	}
+	for _, finding := range report.Findings {
+		if _, ok := want[finding.RuleID]; ok {
+			want[finding.RuleID] = true
+		}
+	}
+	for ruleID, seen := range want {
+		if !seen {
+			t.Fatalf("expected %s finding, got %#v", ruleID, report.Findings)
+		}
+	}
+}
+
 func TestEntropyDetectorFindsTokenLikeValue(t *testing.T) {
 	report := ScanFiles([]FileInput{{
 		Path:    "settings.json",

@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -105,7 +104,7 @@ func scanContent(report *Report, file FileInput, rules []Rule, config Config) {
 		}
 	}
 
-	scanMCPConfig(report, file)
+	scanAgentAndMCPConfig(report, file)
 
 	if config.EnableEntropy {
 		for _, match := range entropyCandidate.FindAllStringIndex(file.Content, -1) {
@@ -128,49 +127,6 @@ func scanContent(report *Report, file FileInput, rules []Rule, config Config) {
 				Snippet:  redact(value),
 				Reason:   "High-entropy token-like value",
 				Entropy:  entropy,
-			})
-		}
-	}
-}
-
-func scanMCPConfig(report *Report, file FileInput) {
-	if !strings.Contains(file.Content, "mcpServers") && !strings.Contains(strings.ToLower(file.Path), "mcp") {
-		return
-	}
-
-	var document any
-	if err := json.Unmarshal([]byte(file.Content), &document); err != nil {
-		return
-	}
-	walkJSON(report, file, document, nil)
-}
-
-func walkJSON(report *Report, file FileInput, value any, path []string) {
-	switch typed := value.(type) {
-	case map[string]any:
-		for key, child := range typed {
-			walkJSON(report, file, child, append(path, key))
-		}
-	case []any:
-		for _, child := range typed {
-			walkJSON(report, file, child, path)
-		}
-	case string:
-		key := ""
-		if len(path) > 0 {
-			key = path[len(path)-1]
-		}
-		if isSensitiveKey(key) && strings.TrimSpace(typed) != "" && !isPlaceholder(typed) {
-			line, column := findValuePosition(file.Content, typed)
-			report.add(Finding{
-				RuleID:   "RG301",
-				Severity: SeverityError,
-				Path:     file.Path,
-				Line:     line,
-				Column:   column,
-				Detector: "mcp-config",
-				Snippet:  redact(typed),
-				Reason:   "MCP configuration embeds a credential-like environment value",
 			})
 		}
 	}
