@@ -5,11 +5,13 @@ COPY cmd ./cmd
 COPY internal ./internal
 RUN go build -trimpath -ldflags="-s -w" -o /out/repoguard-api ./cmd/api
 RUN go build -trimpath -ldflags="-s -w" -o /out/repoguard ./cmd/repoguard
+RUN go build -trimpath -ldflags="-s -w" -o /out/repoguard-mcp ./cmd/mcp
 
 FROM alpine:3.22
 RUN adduser -D -H repoguard
 USER repoguard
 COPY --from=build /out/repoguard-api /usr/local/bin/repoguard-api
 COPY --from=build /out/repoguard /usr/local/bin/repoguard
+COPY --from=build /out/repoguard-mcp /usr/local/bin/repoguard-mcp
 EXPOSE 8080
 ENTRYPOINT ["repoguard-api"]

@@ -1,0 +1,37 @@
+name: RepoGuard
+description: Scan repositories for secrets, risky env files, MCP config leaks, agent permission bypasses, and GitHub Actions permission risks.
+author: kamilch1k
+
+inputs:
+  path:
+    description: Path to scan.
+    required: false
+    default: .
+  fail-on:
+    description: Minimum severity that fails the workflow: none, info, warn, or error.
+    required: false
+    default: error
+  sarif-file:
+    description: SARIF output path.
+    required: false
+    default: repoguard.sarif
+  version:
+    description: RepoGuard module version or ref for go run.
+    required: false
+    default: main
+
+outputs:
+  sarif-file:
+    description: Path to the generated SARIF report.
+    value: ${{ steps.repoguard.outputs.sarif-file }}
+
+runs:
+  using: composite
+  steps:
+    - id: repoguard
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "sarif-file=${{ inputs.sarif-file }}" >> "$GITHUB_OUTPUT"
+        go run github.com/kamilch1k/repoguard/cmd/repoguard@${{ inputs.version }} -path "${{ inputs.path }}" -format sarif -fail-on none > "${{ inputs.sarif-file }}"
+        go run github.com/kamilch1k/repoguard/cmd/repoguard@${{ inputs.version }} -path "${{ inputs.path }}" -fail-on "${{ inputs.fail-on }}"

@@ -1,0 +1,98 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RepoGuard API",
+    "version": "0.2.0",
+    "description": "Agent-first repository security scanner for secrets, risky env files, MCP configs, agent permissions, GitHub Actions permission risks, and SARIF reporting."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service status"
+          }
+        }
+      }
+    },
+    "/api/tools": {
+      "get": {
+        "operationId": "getToolManifest",
+        "responses": {
+          "200": {
+            "description": "Machine-readable tool manifest"
+          }
+        }
+      }
+    },
+    "/api/scan": {
+      "post": {
+        "operationId": "scanFiles",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScanRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "JSON scan report without error-severity findings"
+          },
+          "422": {
+            "description": "JSON scan report with error-severity findings"
+          }
+        }
+      }
+    },
+    "/api/scan/sarif": {
+      "post": {
+        "operationId": "scanFilesSarif",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ScanRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "SARIF report without error-severity findings"
+          },
+          "422": {
+            "description": "SARIF report with error-severity findings"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "ScanRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["files"],
+              "properties": {
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["path", "content"],
+                    "properties": {
+                      "path": { "type": "string" },
+                      "content": { "type": "string" }
+                    }
+                  }
+                },
+                "config": {
+                  "type": "object",
+                  "properties": {
+                    "maxFileBytes": { "type": "integer" },
+                    "entropyThreshold": { "type": "number" },
+                    "enableEntropy": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

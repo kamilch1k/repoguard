@@ -1,0 +1,36 @@
+{
+  "name": "repoguard",
+  "description": "Agent-first repository security scanner for secrets, risky env files, MCP configs, agent permission bypasses, and GitHub Actions permission risks.",
+  "surfaces": {
+    "cli": {
+      "scan": "repoguard -path . -format sarif -fail-on error",
+      "formats": ["text", "json", "sarif"]
+    },
+    "http": {
+      "health": "GET /health",
+      "scanJson": "POST /api/scan",
+      "scanSarif": "POST /api/scan/sarif",
+      "openapi": "GET /openapi.json",
+      "tools": "GET /api/tools"
+    },
+    "mcp": {
+      "command": "repoguard-mcp",
+      "tools": [
+        {
+          "name": "repoguard_scan_payload",
+          "description": "Scan submitted files and return JSON or SARIF."
+        }
+      ]
+    }
+  },
+  "ruleFamilies": [
+    "provider-shaped secrets",
+    "sensitive configuration assignments",
+    "high-entropy token-like values",
+    "committed .env secrets",
+    "MCP embedded credentials",
+    "dangerous agent permission bypasses",
+    "unpinned MCP package execution",
+    "GitHub Actions write-all and OIDC permission risks"
+  ]
+}
